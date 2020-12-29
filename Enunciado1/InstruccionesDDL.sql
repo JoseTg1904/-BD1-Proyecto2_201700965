@@ -67,7 +67,7 @@ CREATE TABLE Producto(
 CREATE TABLE Transaccion(
 	ID_Persona INT NOT NULL,
     ID_Compania INT NOT NULL,
-    PRIMARY KEY (ID_Compania, ID_Persona),
+    PRIMARY KEY(ID_Persona, ID_Compania),
     FOREIGN KEY (ID_Persona) REFERENCES Persona(ID_Persona),
     FOREIGN KEY (ID_Compania) REFERENCES Compania(ID_Compania)
 );

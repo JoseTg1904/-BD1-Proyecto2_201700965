@@ -9,8 +9,9 @@ LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/Enunciado1.csv'
 INTO TABLE Temporal
 COLUMNS TERMINATED BY ';' LINES TERMINATED BY '\n' IGNORE 1 LINES 
 (nombre_compania, contacto_compania, correo_compania, telefono_compania,
-tipo, nombre,  correo, telefono, @casteo, direccion, ciudad, codigo_postal, 
-region, producto, categoria_producto, cantidad, precio_unitario);
+tipo, nombre, correo, telefono, @fecha_registro, direccion, ciudad, codigo_postal, 
+region, producto, categoria_producto, cantidad, precio_unitario)
+SET fecha_registro = STR_TO_DATE(@fecha_registro, "%d/%m/%Y");
 
 #carga de datos a tablas sin dependencias
 INSERT INTO TipoPersona (tipoPersona) 
