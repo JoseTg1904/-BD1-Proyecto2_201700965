@@ -63,7 +63,7 @@ CREATE TABLE Seleccion(
 CREATE TABLE Frontera(
 	ID_Frontera INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     norte BOOL DEFAULT False,
-    sut BOOL DEFAULT False,
+    sur BOOL DEFAULT False,
     este BOOL DEFAULT False,
     oeste BOOL DEFAULT False,
     frontera INT NOT NULL,
@@ -108,7 +108,7 @@ CREATE TABLE AsignacionDocumentacion(
 CREATE TABLE AreaInvestigacion(
 	ID_AreaInvestigacion INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     areaInvestigacion VARCHAR(100) NOT NULL,
-    descripcion TEXT,
+    descripcion TEXT DEFAULT "",
     ranking INT NOT NULL,
     ID_Personal INT NOT NULL,
     FOREIGN KEY (ID_Personal) REFERENCES Personal(ID_Personal)
