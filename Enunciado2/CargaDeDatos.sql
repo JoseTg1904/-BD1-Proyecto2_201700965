@@ -114,7 +114,7 @@ SELECT DISTINCT sub.ID_Pais, sub.ID_Respuesta FROM
 ) as sub;
 
 INSERT INTO Frontera (norte, sur, este, oeste, frontera, ID_Pais)
-SELECT * FROM
+SELECT DISTINCT * FROM
 (SELECT IF(TRIM(norte) like "x", True, False) AS norte, 
 	IF(TRIM(sur) like "x", True, False) AS sur,
     IF(TRIM(este) like "x", True, False) AS este, 

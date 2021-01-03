@@ -108,7 +108,7 @@ CREATE TABLE AsignacionDocumentacion(
 CREATE TABLE AreaInvestigacion(
 	ID_AreaInvestigacion INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     areaInvestigacion VARCHAR(100) NOT NULL,
-    descripcion TEXT DEFAULT "",
+    descripcion TEXT,
     ranking INT NOT NULL,
     ID_Personal INT NOT NULL,
     FOREIGN KEY (ID_Personal) REFERENCES Personal(ID_Personal)
