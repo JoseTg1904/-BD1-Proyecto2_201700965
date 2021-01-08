@@ -71,11 +71,8 @@ SELECT invento FROM Invento WHERE
 WITH japon AS
 (SELECT area FROM Pais WHERE pais LIKE "Japon"),
 individual AS 
-(SELECT pais, area, poblacion FROM Pais WHERE
-ID_Region IN (
-	(SELECT ID_Region FROM Region WHERE region LIKE "Pacifico Sur"), 
-	(SELECT ID_Region FROM Region WHERE region LIKE "El Caribe"), 
-	(SELECT ID_Region FROM Region WHERE region LIKE "Pacifico")))
+(SELECT pais, area, poblacion FROM Pais
+	WHERE ID_Pais NOT IN (SELECT ID_Pais FROM Frontera))
 SELECT individual.pais, individual.poblacion FROM individual, japon
 WHERE individual.area >= japon.area; 
 

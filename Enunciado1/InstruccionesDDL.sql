@@ -2,7 +2,7 @@
 CREATE DATABASE enunciado1Proyecto2;
 
 #utilizando la base de datos creada
-USE enunciado1Proyecto2;
+USE enunciado2Proyecto2;
 
 #Creando las tablas que no tengan dependencia de otras
 CREATE TABLE Region(

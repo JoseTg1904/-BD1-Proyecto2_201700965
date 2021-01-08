@@ -1,9 +1,11 @@
 #utilizando la base de datos para el enunciado 1
 USE enunciado2Proyecto2;
 
-/*Para la carga del csv se debe de mover dicho csv hacia la carpeta segura
+/* Para la carga del csv se debe de mover dicho csv hacia la carpeta segura
 la ruta en cual se debe de mover este archivo se visualiza con el comando 
 SHOW VARIABLES LIKE "secure_file_priv";
+Se usa el ignore en la carga masiva de los csv para ignorar los espacios vacios, que 
+se originan por un archivo sucio de entrada
 */
 #Carga de datos del csv que carga regiones y sus padres
 LOAD DATA INFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/tres.csv'
@@ -41,9 +43,9 @@ SET anio = STR_TO_DATE(@anio, "%Y");
 INSERT INTO Region (region)
 SELECT TRIM(nombre_region) FROM TemporalRegion;
 
-/* Con el ignore se ignora el campo obligatorio de cada tupla que es "region",
-al utilizar left join obtenemos todas las claves foranes que pertenecen a las regiones padre,
-con el inner join se obtienen las claves primarias de cada tupla,
+/* Con el ignore se ignora el campo obligatorio de cada tupla que es "region"
+que es el nombre de la region, al utilizar left join obtenemos todas las claves foranes 
+que pertenecen a las regiones padre, con el inner join se obtienen las claves primarias de cada tupla,
 al utilizar el on duplicate key update en vez de hacer nuevas inserciones se actualizan los registros 
 que ya contengan esas claves */
 INSERT IGNORE Region (ID_Region, padre)
@@ -67,7 +69,6 @@ SELECT ID_Personal, True FROM Personal WHERE Personal.nombre =
 	(SELECT (profesional_asignado) FROM TemporalPrincipal
 		WHERE profesional_jefe LIKE "TODAS" LIMIT 1)
 ON DUPLICATE KEY UPDATE principal = True;
-
 
 #Creando las tablas que tienen dependencias
 INSERT INTO Pregunta (pregunta, ID_Encuesta)
@@ -150,30 +151,25 @@ SELECT DISTINCT sub.ID_Personal, sub.ID_Invento FROM
 	INNER JOIN Invento ON Invento.invento LIKE TRIM(TemporalPrincipal.invento)
     INNER JOIN Personal ON Personal.nombre LIKE TRIM(TemporalPrincipal.profesional_asignado)) AS sub;
 
-INSERT IGNORE INTO AreaInvestigacion (areaInvestigacion, ranking)
-SELECT DISTINCT * FROM
-(SELECT TRIM(TemporalPrincipal.area_investigacion), ranking
-	FROM TemporalPrincipal WHERE TemporalPrincipal.area_investigacion <> "") as sub;
+#Insercion de las areas que si tienen un jefe inmediato en el csv
+INSERT INTO AreaInvestigacion (areaInvestigacion, ranking, ID_Personal)
+SELECT sub.area_investigacion, sub.ranking, (SELECT ID_Personal FROM Personal WHERE nombre LIKE jefe.profesional_asignado) FROM
+(SELECT DISTINCT TRIM(TemporalPrincipal.area_investigacion) AS area_investigacion, ranking
+	FROM TemporalPrincipal WHERE TemporalPrincipal.area_investigacion <> "") as sub,
+(SELECT DISTINCT TRIM(profesional_asignado) AS profesional_asignado , TRIM(profesional_jefe) as  profesional_jefe 
+	FROM TemporalPrincipal 
+	WHERE TemporalPrincipal.profesional_jefe <> "" AND TemporalPrincipal.profesional_jefe <> "TODAS") AS jefe
+WHERE sub.area_investigacion LIKE jefe.profesional_jefe;
     
-#Insertando jefes de areas de investigacion
-INSERT IGNORE AreaInvestigacion (ID_AreaInvestigacion, ID_Personal)
-SELECT DISTINCT sub.ID_AreaInvestigacion, sub.ID_Personal FROM
-	(SELECT Personal.ID_Personal as ID_Personal,
-		AreaInvestigacion.ID_AreaInvestigacion AS ID_AreaInvestigacion 
-		FROM TemporalPrincipal
-		INNER JOIN Personal ON TRIM(TemporalPrincipal.profesional_asignado) LIKE Personal.nombre
-        INNER JOIN AreaInvestigacion ON TRIM(TemporalPrincipal.profesional_jefe) LIKE AreaInvestigacion.areaInvestigacion
-		order by AreaInvestigacion.ID_AreaInvestigacion
-    ) AS sub
-ON DUPLICATE KEY UPDATE ID_Personal = sub.ID_Personal;
-    
-#Actualizando al jefe de todas para que sea jefe de las que no tenian jefe principal
-UPDATE AreaInvestigacion
-set ID_Personal = (SELECT ID_Personal FROM Personal WHERE Personal.principal = True)
-WHERE AreaInvestigacion.ID_Personal = 0;
+#Insercion de las areas que no tienen jefe inmediato, dejando de jefe al jefe de todas las areas
+INSERT INTO AreaInvestigacion (areaInvestigacion, ranking, ID_Personal)
+SELECT Distinct area_investigacion, ranking, (SELECT ID_Personal FROM Personal WHERE principal = True) 
+	FROM TemporalPrincipal WHERE
+	TRIM(TemporalPrincipal.area_investigacion) NOT IN (SELECT areaInvestigacion FROM AreaInvestigacion) 
+    AND TemporalPrincipal.area_investigacion <> "";
 
 INSERT INTO AsignacionArea (ID_AreaInvestigacion, ID_Personal)
 SELECT DISTINCT AreaInvestigacion.ID_AreaInvestigacion, Personal.ID_Personal 
 	FROM TemporalPrincipal
 	INNER JOIN Personal ON Personal.nombre LIKE TRIM(TemporalPrincipal.profesional_asignado)
-    INNER JOIN AreaInvestigacion ON AreaInvestigacion.areaInvestigacion LIKE TRIM(TemporalPrincipal.area_investigacion)
+    INNER JOIN AreaInvestigacion ON AreaInvestigacion.areaInvestigacion LIKE TRIM(TemporalPrincipal.area_investigacion);
